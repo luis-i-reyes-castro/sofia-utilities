@@ -2,14 +2,17 @@
 Utilities for generating stamps (UUIDs, timestamps, sha256, etc.)
 """
 
-from datetime import datetime
-from datetime import timezone
+from datetime import ( datetime,
+                       timezone,
+                       timedelta )
 from git import Repo
 from hashlib import sha256
-from random import choices
+from random import ( choices,
+                     randrange )
 from string import ascii_letters
 from string import digits
 from uuid import uuid4
+
 
 def generate_B62ID( length : int) -> str :
     """
@@ -21,6 +24,42 @@ def generate_B62ID( length : int) -> str :
         str: Random ID of the desired length
     """
     return "".join( choices( list( ascii_letters + digits ), k = length) )
+
+def generate_number( length : int) -> str :
+    """
+    Generate a random number\n
+    Args:
+        length: Desired length (number of digits)
+    Returns:
+        str: Random number as string
+    """
+    return "".join( choices( list(digits), k = length) )
+
+def generate_rand_date( start_date : str | None = None,
+                        end_date   : str | None = None ) -> str:
+    """
+    Generate a random date between start_date and end_date\n
+    Args:
+        start_date : 'DD/MM/YYYY' or None
+        end_date   : 'DD/MM/YYYY' or None
+    Returns:
+        str: Random date ('DD/MM/YYYY')
+    """
+    if start_date :
+        start_time = datetime.strptime( start_date, "%d/%m/%Y")
+    else :
+        start_time = datetime.now() - timedelta( days = 365)
+    
+    if end_date :
+        end_time = datetime.strptime( end_date, "%d/%m/%Y")
+    else :
+        end_time = datetime.now()
+    
+    time_between = end_time - start_time
+    random_days  = randrange(time_between.days)
+    random_date  = start_time + timedelta( days = random_days)
+    
+    return random_date.strftime("%d/%m/%Y")
 
 def generate_UUID() -> str :
     """
