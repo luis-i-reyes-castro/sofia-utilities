@@ -3,7 +3,7 @@ requires = ["setuptools>=61"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "sofia-utilities"
+name = "sofia-utils"
 version = "1.0.0"
 description = "A utilities package named after my beautiful siamese cat"
 readme = "README.md"
@@ -21,4 +21,4 @@ dependencies = [
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["sofia_utilities*"]
+include = ["sofia_utils*"]

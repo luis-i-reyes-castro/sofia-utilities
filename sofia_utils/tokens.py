@@ -7,7 +7,7 @@ import os
 import sys
 import tiktoken
 
-from .file_io import load_file_as_string
+from .io import load_file_as_string
 from .printing import print_sep
 
 def count_tokens_in_string( string : str, encoding_name : str = "cl100k_base") -> int :
