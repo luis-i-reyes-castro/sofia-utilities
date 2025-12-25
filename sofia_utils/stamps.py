@@ -5,7 +5,6 @@ Utilities for generating stamps (UUIDs, timestamps, sha256, etc.)
 from datetime import ( datetime,
                        timezone,
                        timedelta )
-from git import Repo
 from hashlib import sha256
 from random import ( choices,
                      randrange )
@@ -16,35 +15,35 @@ from uuid import uuid4
 
 def generate_B62ID( length : int) -> str :
     """
-    Generate Base62 random ID. (Characters in A-Z, a-z and 0-9.)
-    
+    Generate random Base62 ID \\
     Args:
-        length: Desired ID length (number of characters)
+        length: Desired number of characters
     Returns:
-        str: Random ID of the desired length
+        Random string of ASCII letters and digits
     """
     return "".join( choices( list( ascii_letters + digits ), k = length) )
 
 def generate_number( length : int) -> str :
     """
-    Generate a random number\n
+    Generate a random sequence of digits \\
     Args:
-        length: Desired length (number of digits)
+        length: Desired number of digits
     Returns:
-        str: Random number as string
+        Random sequence of digits (including, possibly, leading zeros).
     """
     return "".join( choices( list(digits), k = length) )
 
 def generate_rand_date( start_date : str | None = None,
                         end_date   : str | None = None ) -> str:
     """
-    Generate a random date between start_date and end_date\n
+    Generate a random date between start_date and end_date \\
     Args:
-        start_date : 'DD/MM/YYYY' or None
-        end_date   : 'DD/MM/YYYY' or None
+        start_date : 'DD/MM/YYYY' or None. If None then use today's date one year ago.
+        end_date   : 'DD/MM/YYYY' or None. If None then use today's date.
     Returns:
-        str: Random date ('DD/MM/YYYY')
+        str: Random date in interval (endpoints inclusive) in 'DD/MM/YYYY' format.
     """
+    
     if start_date :
         start_time = datetime.strptime( start_date, "%d/%m/%Y")
     else :
@@ -55,107 +54,89 @@ def generate_rand_date( start_date : str | None = None,
     else :
         end_time = datetime.now()
     
+    if start_time > end_time :
+        msg = "Start date is later than end date\n" \
+            + f"Start date: {start_time.strftime('%d/%m/%Y')}\n" \
+            + f"End date  : {end_time.strftime('%d/%m/%Y')}"
+        raise ValueError(f"In generate_rand_date: {msg}")
+    
+    elif start_time == end_time :
+        return start_time.strftime("%d/%m/%Y")
+    
     time_between = end_time - start_time
-    random_days  = randrange(time_between.days)
+    random_days  = randrange(time_between.days + 1)
     random_date  = start_time + timedelta( days = random_days)
     
     return random_date.strftime("%d/%m/%Y")
 
 def generate_UUID() -> str :
     """
-    Generate UUID
+    Generate UUID-4
     """
     return str(uuid4())
 
 def get_now_utc_iso() -> str :
     """
-    Get current UTC time as ISO 8601 formatted string.
-    
-    Returns a timestamp in ISO 8601 format with UTC timezone indicator (Z suffix).
-    Microseconds are removed for consistency.
-    
+    Get current UTC time as ISO 8601 formatted string \\
     Returns:
-        str: ISO 8601 formatted UTC timestamp (e.g., "2024-01-15T10:30:00Z")
+        ISO 8601 formatted UTC timestamp including microseconds and Z suffix.
+        E.g., "2024-01-15T10:32:58.125098Z".
     """
+    
     now_dt  = datetime.now(timezone.utc)
     now_str = now_dt.isoformat( timespec = "microseconds")
     now_str = now_str.replace( "+00:00", "Z")
     
     return now_str
 
-def get_repo_main_hash() -> str :
-    """
-    Get the hash of the repository's main branch
-    Returns:
-        str: Hash as hexadecimal number
-    """
-    repo = Repo( search_parent_directories = True)
-    return repo.heads.main.commit.hexsha
-
 def get_sha256( data : bytes) -> str :
     """
-    Calculate SHA-256 hash of binary data.
-    
+    Calculate SHA-256 hash of bytes object \\
     Args:
-        data: Binary data to hash
-    
+        data : object to hash
     Returns:
-        str: Hexadecimal representation of the SHA-256 hash
+        SHA-256 hash of the object's binary content
     """
     h = sha256()
     h.update(data)
     return h.hexdigest()
 
-def unix_to_utc_iso( epoch : int | str | None) -> str | None :
+def unix_to_utc_iso( epoch : int | float | str | None) -> str | None :
     """
-    Convert a Unix epoch timestamp string to ISO 8601 formatted string.
-    
-    Returns a timestamp in ISO 8601 format with UTC timezone indicator (Z suffix).
-    Microseconds are removed for consistency.
-    
+    Convert a Unix epoch timestamp to ISO 8601 formatted string \\
     Args:
-        epoch: Unix epoch time string
-    
+        epoch : Unix epoch timestamp (seconds since 1970-01-01T00:00:00) or None
     Returns:
-        str: ISO 8601 formatted UTC timestamp (e.g., "2024-01-15T10:30:00Z") or 
-             None (if conversion fails)
+        * If conversion succeeded then ISO 8601 formatted UTC timestamp including seconds and Z suffix, e.g., "2024-01-15T10:32:58Z".
+        * If conversion failed or None passed then None
     """
-    if epoch and isinstance( epoch, int) :
-        epoch = str(epoch)
-    
-    if epoch and isinstance( epoch, str) :
-        try:
-            epoch = epoch.strip()
-            if epoch :
-                ts_dt  = datetime.fromtimestamp( float(epoch), tz = timezone.utc)
-                ts_str = ts_dt.isoformat( timespec = "seconds")
-                ts_str = ts_str.replace( "+00:00", "Z")
-                
-                return ts_str
-            
-        except Exception as ex:
-            print(f"In unix_epoch_to_utc_iso: {ex}")
+    if epoch :
+        try :
+            ts_dt  = datetime.fromtimestamp( float(epoch), tz = timezone.utc)
+            ts_str = ts_dt.isoformat( timespec = "seconds")
+            ts_str = ts_str.replace( "+00:00", "Z")
+            return ts_str
+        
+        except Exception as ex :
+            print(f"In unix_to_utc_iso: {ex}")
     
     return None
 
-def utc_iso_to_dt( ts : str | None) -> datetime | None :
+def utc_iso_to_dt( timestamp : str | None) -> datetime | None :
     """
-    Convert ISO 8601 timestamp string to datetime object.
-    
-    Handles both formats with and without 'Z' suffix for UTC timezone.
-    
+    Convert ISO 8601 timestamp string to datetime object. \\
+    Handles both formats with and without 'Z' suffix for UTC timezone. \\
     Args:
-        ts: ISO 8601 timestamp string
-            (e.g., "2024-01-15T10:30:00Z" or "2024-01-15T10:30:00+00:00")
-    
+        timestamp : ISO 8601 timestamp string or None
     Returns:
-        datetime: datetime object or None (if conversion fails)
+        * If conversion succeeded then datetime object
+        * If conversion failed or None passed then None
     """
-    if ts :
+    if timestamp :
         try :
-            if ts.endswith("Z") :
-                ts = ts.replace( "Z", "+00:00")
-            return datetime.fromisoformat(ts)
+            if timestamp.endswith("Z") :
+                timestamp = timestamp.replace( "Z", "+00:00")
+            return datetime.fromisoformat(timestamp)
         
         except Exception as ex :
             print(f"In utc_iso_to_dt: {ex}")
