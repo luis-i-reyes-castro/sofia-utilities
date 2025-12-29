@@ -17,6 +17,41 @@ MIN_B64_IMG_ENCONDING_LENGTH = 2000
 """ Minimum Base64 image encoding length. Strings of this length or longer will be suspected to being Base64 image encondings. """
 
 
+def print_ind( argument     : str,
+               indent_level : int = 0,
+               indent_type  : str = DEFAULT_INDENT ) -> None :
+    """
+    Print indented string \\
+    Args:
+        argument     : Input string
+        indent_level : Indentation level. Each level is `INDENT_SPACES` spaces or one tab.
+        indent_type  : Indentation type: `spaces` | `tabs`
+    """
+    print(str_ind( argument, indent_level, indent_type))
+    return
+
+def print_recursively( data         : Any,
+                       indent_level : int = 0,
+                       indent_type  : str = DEFAULT_INDENT ) -> None :
+    """
+    Print string representation of object, recursively parsing contents. \\
+    Args:
+        data         : Input object
+        indent_level : Indentation level. Each level is `INDENT_SPACES` spaces or one tab.
+        indent_type  : Indentation type: `spaces` | `tabs`
+    """
+    print(str_recursively( data, indent_level, indent_type))
+    return
+
+def print_sep( width : int = 80) -> None :
+    """
+    Print separator string \\
+    Args:
+        width : Number of '-' characters in separator
+    """
+    print( '-' * width )
+    return
+
 def str_ind( argument     : str,
              indent_level : int = 0,
              indent_type  : str = DEFAULT_INDENT ) -> str :
@@ -212,48 +247,3 @@ def str_recursively( data         : Any,
     # Fallback
     _visited.remove(data_id)
     return str_ind( f"object of type {type(data)}", indent_level, indent_type)
-
-def str_sep( width : int = 80) -> str :
-    """
-    Produce separator string \\
-    Args:
-        width : Number of `-` characters in separator
-    Returns
-        Separator string
-    """
-    return '-' * width
-
-def print_ind( argument     : str,
-               indent_level : int = 0,
-               indent_type  : str = DEFAULT_INDENT ) -> None :
-    """
-    Print indented string \\
-    Args:
-        argument     : Input string
-        indent_level : Indentation level. Each level is `INDENT_SPACES` spaces or one tab.
-        indent_type  : Indentation type: `spaces` | `tabs`
-    """
-    print(str_ind( argument, indent_level, indent_type))
-    return
-
-def print_recursively( data         : Any,
-                       indent_level : int = 0,
-                       indent_type  : str = DEFAULT_INDENT ) -> None :
-    """
-    Print string representation of object, recursively parsing contents. \\
-    Args:
-        data         : Input object
-        indent_level : Indentation level. Each level is `INDENT_SPACES` spaces or one tab.
-        indent_type  : Indentation type: `spaces` | `tabs`
-    """
-    print(str_recursively( data, indent_level, indent_type))
-    return
-
-def print_sep( width : int = 80) -> None :
-    """
-    Print separator string \\
-    Args:
-        width : Number of '-' characters in separator
-    """
-    print(str_sep(width))
-    return

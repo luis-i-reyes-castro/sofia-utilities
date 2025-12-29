@@ -48,8 +48,7 @@ def encode_image( image_path : str | Path) -> str | None :
     Args:
         image_path : Image name or path
     Returns:
-        * If image found: String containing the image's base64 encoding
-        * If image not found: None
+        If image found then image's base64 encoding string; else None.
     """
     try :
         image_bytes = Path(image_path).read_bytes()
@@ -87,7 +86,7 @@ def extract_code_block( data : str) -> str :
     Args:
         data: Input string
     Returns:
-        Output string
+        If code block found then contents of first code block; else original string.
     """
     data  = data.strip()
     lines = data.split('\n')
@@ -129,19 +128,30 @@ def list_files_starting_with( directory  : str | Path,
     """
     List files in a directory starting with a given prefix and extension(s). \\
     Args:
-        directory  : Directory name or path
+        directory  : Directory name or path (RELATIVE to the working directory)
         prefix     : Target file prefix
-        extensions : Target file extension(s)
+        extensions : Target file extension(s), with or without the starting dot.
+                     NOTE: If '.json' found then '.jsonc' will be added.
     Returns:
         Sorted list of filepaths (alphabetical order)
     """
     if isinstance( extensions, str) :
-        ext_candidates = [ extensions ]
-        if extensions == 'json' :
-            ext_candidates.append('jsonc')
+        ext_clean      = extensions[1:] if extensions[0] == "." else extensions
+        ext_candidates = { ext_clean }
+        if "json" in ext_candidates :
+            ext_candidates.add("jsonc")
     
-    elif isinstance( extensions, list) or isinstance( extensions, tuple) :
-        ext_candidates = set(extensions)
+    elif ( isinstance( extensions, list) or \
+           isinstance( extensions, tuple) ) and \
+      all( isinstance( ext, str) for ext in extensions ) :
+        
+        ext_candidates : set[str] = set()
+        for extension_ in extensions :
+            ext_clean = extension_[1:] if extension_[0] == "." else extension_
+            ext_candidates.add(ext_clean)
+        
+        if "json" in ext_candidates :
+            ext_candidates.add("jsonc")
     
     else :
         msg = f"Invalid 'extensions' type: {type(extensions)}"
@@ -149,7 +159,7 @@ def list_files_starting_with( directory  : str | Path,
     
     filepaths = []
     for ext in ext_candidates :
-        filepaths.extend( glob(f'{str(directory)}/{prefix}*.{ext}') )
+        filepaths.extend( glob(f"{str(Path(directory))}/{prefix}*.{ext}") )
     
     return sorted(filepaths)
 
@@ -159,8 +169,7 @@ def load_file_as_binary( filepath : str | Path) -> bytes | None :
     Args:
         filepath: File name or path
     Returns:
-        * If file found then bytes object
-        * If file not found then None
+        If file found then binary data as bytes object; else None.
     """
     try :
         return Path(filepath).read_bytes()
@@ -174,8 +183,7 @@ def load_file_as_string( filepath : str | Path) -> str | None :
     Args:
         filepath: File name or path
     Returns:
-        * If file found then string
-        * If file not found then None
+        If file found then text data as string; else None.
     """
     try :
         return Path(filepath).read_text( encoding = "utf-8")
@@ -189,8 +197,7 @@ def load_json_file( filepath : str | Path) -> Any | None :
     Args:
         filepath: File name or path
     Returns:
-        * If file found then deserialized content
-        * If file not found then None
+        If file found then deserialized content; else None.
     """
     filepath = Path(filepath)
     try :
@@ -213,9 +220,9 @@ def load_json_dicts_starting_with( directory : str | Path,
         prefix    : Target file prefix
         mode      : Loading mode (group or merge)
     Returns:
-        Ordered dict depending on loading mode:
-        * LoadMode.GROUP: Maps clean filenames to file contents
-        * LoadMode.MERGE: Union of the contents of all files
+        Ordered dict, the structure of which depends on loading mode:
+        `LoadMode.GROUP`: Result maps clean filenames to file contents
+        `LoadMode.MERGE`: Result is union of the contents of all files
     """
     result = OrderedDict()
     files  = list_files_starting_with( directory, prefix, "json")
@@ -242,8 +249,9 @@ def load_json_lists_starting_with( directory : str | Path,
         prefix    : Target file prefix
         mode      : Loading mode (group or merge)
     Returns:
-        * LoadMode.GROUP: Ordered dict mapping clean filenames to file contents
-        * LoadMode.MERGE: Single list with the combined contents of all files
+        Ordered dict or list, depending on loading mode:
+        `LoadMode.GROUP`: Ordered dict mapping clean filenames to file contents
+        `LoadMode.MERGE`: Single list with the combined contents of all files
     """
     result = None
     match mode :

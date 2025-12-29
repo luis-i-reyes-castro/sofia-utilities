@@ -71,7 +71,9 @@ def generate_rand_date( start_date : str | None = None,
 
 def generate_UUID() -> str :
     """
-    Generate UUID-4
+    Generate a standard UUID-4. This is a random Universal Unique Identifier (UUID) composed of 32 hexadecimal digits (128 bits) grouped as 8-4-4-4-12, separated by hyphens, for a total of 36 characters. \\
+    Returns:
+        'xxxxxxxx-xxxx-4xxx-Nxxx-xxxxxxxxxxxx' where N in ( 8, 9, a, b)
     """
     return str(uuid4())
 
@@ -79,7 +81,7 @@ def get_now_utc_iso() -> str :
     """
     Get current UTC time as ISO 8601 formatted string \\
     Returns:
-        ISO 8601 formatted UTC timestamp including microseconds and Z suffix.
+        ISO 8601 UTC timestamp including microseconds and Z suffix.
         E.g., "2024-01-15T10:32:58.125098Z".
     """
     
@@ -107,8 +109,8 @@ def unix_to_utc_iso( epoch : int | float | str | None) -> str | None :
     Args:
         epoch : Unix epoch timestamp (seconds since 1970-01-01T00:00:00) or None
     Returns:
-        * If conversion succeeded then ISO 8601 formatted UTC timestamp including seconds and Z suffix, e.g., "2024-01-15T10:32:58Z".
-        * If conversion failed or None passed then None
+        If conversion succeeded then ISO 8601 UTC timestamp including seconds and Z suffix,
+        e.g., "2024-01-15T10:32:58Z"; else None.
     """
     if epoch :
         try :
@@ -129,8 +131,7 @@ def utc_iso_to_dt( timestamp : str | None) -> datetime | None :
     Args:
         timestamp : ISO 8601 timestamp string or None
     Returns:
-        * If conversion succeeded then datetime object
-        * If conversion failed or None passed then None
+        If conversion succeeded then datetime object; else None.
     """
     if timestamp :
         try :
