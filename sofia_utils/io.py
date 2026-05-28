@@ -12,7 +12,7 @@ from pathlib import Path
 from typing import Any
 
 
-JSON_INDENT = 4
+JSON_INDENT = 2
 """ Default JSON Indentation Level """
 
 

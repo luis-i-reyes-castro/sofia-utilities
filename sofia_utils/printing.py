@@ -45,7 +45,7 @@ def print_recursively( data         : Any,
     print(str_recursively( data, indent_level, indent_type))
     return
 
-def print_sep( width : int = 80) -> None :
+def print_sep( width : int = 64) -> None :
     """
     Print separator string \\
     Args:
