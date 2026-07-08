@@ -4,15 +4,21 @@ Utilities for generating stamps (UUIDs, timestamps, sha256, etc.)
 
 from __future__ import annotations
 
-from datetime import ( datetime,
-                       timezone,
-                       timedelta )
+from datetime import (
+    datetime,
+    timezone,
+    timedelta,
+)
 from hashlib import sha256
-from random import ( choices,
-                     randrange )
+from random import (
+    choices,
+    randrange,
+)
 from string import ascii_letters
 from string import digits
+from typing import Literal
 from uuid import uuid4
+from zoneinfo import ZoneInfo
 
 
 def generate_B62ID( length : int) -> str :
@@ -79,17 +85,32 @@ def generate_UUID() -> str :
     """
     return str(uuid4())
 
-def get_now_utc_iso() -> str :
+def get_now_utc_iso(
+    *,
+    time_zone : str | None = None,
+    timespec  : Literal[ "seconds", "milliseconds", "microseconds"] | None = None,
+) -> str :
     """
     Get current UTC time as ISO 8601 formatted string \\
+    Args:
+        time_zone : Time zone string (e.g., "America/New_York") or None.
+        Defaults to UTC.
+        timespec  : Seconds, milliseconds, microseconds or None.
+        Defaults to microseconds.
     Returns:
-        ISO 8601 UTC timestamp including microseconds and Z suffix.
+        ISO 8601 UTC timestamp.
+        Adds Z suffix when no time zone is passed as argument.
         E.g., "2024-01-15T10:32:58.125098Z".
     """
     
-    now_dt  = datetime.now(timezone.utc)
-    now_str = now_dt.isoformat( timespec = "microseconds")
-    now_str = now_str.replace( "+00:00", "Z")
+    now_dt  = datetime.now(
+        ZoneInfo(time_zone) if time_zone else timezone.utc
+    )
+    now_str = now_dt.isoformat(
+        timespec = timespec if timespec else "microseconds"
+    )
+    if not time_zone :
+        now_str = now_str.replace( "+00:00", "Z")
     
     return now_str
 
