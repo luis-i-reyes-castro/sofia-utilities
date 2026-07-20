@@ -18,6 +18,7 @@ from psycopg.rows import (
     DictRow,
     dict_row,
 )
+from psycopg.types.json import Jsonb
 from psycopg_pool import (
     AsyncConnectionPool,
     ConnectionPool,
