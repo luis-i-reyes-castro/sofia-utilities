@@ -38,20 +38,20 @@ type Sync_DB_Connection = Connection[DictRow]
 type Sync_DB_Cursor     = Cursor[DictRow]
 """ Sync Database Cursor """
 
-type DB_Connection = AsyncConnection[DictRow]
+type Async_DB_Connection = AsyncConnection[DictRow]
 """ Async Database Connection """
-type DB_Cursor     = AsyncCursor[DictRow]
+type Async_DB_Cursor     = AsyncCursor[DictRow]
 """ Async Database Cursor """
 
 sync_db_connection_pool : ConnectionPool[Sync_DB_Connection] | None = None
 """ Global Sync Database Connection Pool """
 
-db_connection_pool : AsyncConnectionPool[DB_Connection] | None = None
+async_db_connection_pool : AsyncConnectionPool[Async_DB_Connection] | None = None
 """ Global Async Database Connection Pool """
 
 
 # -----------------------------------------------------------------------------------------
-# POOLED SYNC DATABASE CONNECTION
+# SYNC POOLED DATABASE CONNECTION
 
 def open_sync_database_connection_pool(
     database_url : str,
@@ -68,7 +68,7 @@ def open_sync_database_connection_pool(
         timeout      : Database pool timeout
     """
     global sync_db_connection_pool
-
+    
     if sync_db_connection_pool is None :
         pool = ConnectionPool(
             conninfo = database_url,
@@ -80,7 +80,7 @@ def open_sync_database_connection_pool(
         )
         pool.open()
         sync_db_connection_pool = pool
-
+    
     return
 
 
@@ -89,11 +89,11 @@ def close_sync_database_connection_pool() -> None :
     Close the sync database connection pool.
     """
     global sync_db_connection_pool
-
+    
     if sync_db_connection_pool is not None :
         sync_db_connection_pool.close()
         sync_db_connection_pool = None
-
+    
     return
 
 
@@ -123,17 +123,17 @@ def sync_pooled_conection(
             max_size     = max_size,
             timeout      = timeout,
         )
-
+    
     pool = sync_db_connection_pool
     if pool is None :
         raise RuntimeError("Database pool is not initialized")
-
+    
     with pool.connection() as db_connection :
         yield db_connection
 
 
 # -----------------------------------------------------------------------------------------
-# POOLED DATABASE CONNECTION
+# ASYNC POOLED DATABASE CONNECTION
 
 async def open_async_database_connection_pool(
     database_url : str,
@@ -149,9 +149,9 @@ async def open_async_database_connection_pool(
         max_size     : Database pool maximum size
         timeout      : Database pool timeout
     """
-    global db_connection_pool
+    global async_db_connection_pool
     
-    if db_connection_pool is None :
+    if async_db_connection_pool is None :
         pool = AsyncConnectionPool(
             conninfo = database_url,
             min_size = min_size,
@@ -161,7 +161,7 @@ async def open_async_database_connection_pool(
             open     = False,
         )
         await pool.open()
-        db_connection_pool = pool
+        async_db_connection_pool = pool
     
     return
 
@@ -170,11 +170,11 @@ async def close_async_database_connection_pool() -> None :
     """
     Close the database connection pool.
     """
-    global db_connection_pool
+    global async_db_connection_pool
     
-    if db_connection_pool is not None :
-        await db_connection_pool.close()
-        db_connection_pool = None
+    if async_db_connection_pool is not None :
+        await async_db_connection_pool.close()
+        async_db_connection_pool = None
     
     return
 
@@ -185,7 +185,7 @@ async def async_pooled_connection(
     min_size     : int        = 1,
     max_size     : int        = 5,
     timeout      : float      = 30,
-) -> AsyncIterator[DB_Connection] :
+) -> AsyncIterator[Async_DB_Connection] :
     """
     Open the database connection pool if needed and yield an async connection. \\
     Args:
@@ -194,7 +194,7 @@ async def async_pooled_connection(
         max_size     : Database pool maximum size
         timeout      : Database pool timeout
     """
-    if db_connection_pool is None :
+    if async_db_connection_pool is None :
         if database_url is None :
             raise RuntimeError("Database pool is not initialized and database_url is unset")
         await open_async_database_connection_pool(
@@ -204,7 +204,7 @@ async def async_pooled_connection(
             timeout      = timeout,
         )
     
-    pool = db_connection_pool
+    pool = async_db_connection_pool
     if pool is None :
         raise RuntimeError("Database pool is not initialized")
     
