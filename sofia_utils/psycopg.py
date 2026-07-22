@@ -49,6 +49,12 @@ sync_db_connection_pool : ConnectionPool[Sync_DB_Connection] | None = None
 async_db_connection_pool : AsyncConnectionPool[Async_DB_Connection] | None = None
 """ Global Async Database Connection Pool """
 
+DATABASE_CONNECTION_KWARGS : dict[str, Any] = {
+    "row_factory"        : dict_row,
+    "prepare_threshold"  : None,
+}
+""" Common psycopg connection kwargs for Supabase/PgBouncer compatibility. """
+
 
 # -----------------------------------------------------------------------------------------
 # SYNC POOLED DATABASE CONNECTION
@@ -75,7 +81,7 @@ def open_sync_database_connection_pool(
             min_size = min_size,
             max_size = max_size,
             timeout  = timeout,
-            kwargs   = { "row_factory" : dict_row },
+            kwargs   = DATABASE_CONNECTION_KWARGS,
             open     = False,
         )
         pool.open()
@@ -157,7 +163,7 @@ async def open_async_database_connection_pool(
             min_size = min_size,
             max_size = max_size,
             timeout  = timeout,
-            kwargs   = { "row_factory" : dict_row },
+            kwargs   = DATABASE_CONNECTION_KWARGS,
             open     = False,
         )
         await pool.open()
