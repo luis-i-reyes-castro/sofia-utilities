@@ -12,15 +12,23 @@ license = { file = "LICENSE" }
 authors = [
   { name = "Luis Ignacio Reyes Castro", email = "luis.i.reyes.castro@gmail.com" },
 ]
-dependencies = [
-  "Pillow>=12.1.1",
-  "pydantic>=2.12.5",
-  "tiktoken>=0.9.0",
-]
+dependencies = []
 [project.optional-dependencies]
+email = [
+  "requests>=2.32.0",
+]
+images = [
+  "Pillow>=12.1.1",
+]
 psycopg = [
   "psycopg[binary]>=3.3.3",
   "psycopg_pool>=3.3.1",
+]
+pydantic = [
+  "pydantic>=2.12.5",
+]
+tokens = [
+  "tiktoken>=0.9.0",
 ]
 
 [tool.setuptools.packages.find]
