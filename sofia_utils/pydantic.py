@@ -4,9 +4,56 @@ Pydantic-related Helpers
 
 from __future__ import annotations
 
-from pydantic import ValidationError
+from mimetypes import guess_extension
+from pydantic import (
+    AfterValidator,
+    Field,
+    ValidationError,
+)
+from typing import Annotated
 
 from .printing import print_ind
+
+
+type HexHash     = Annotated[ str, Field( pattern = r"^[A-Fa-f0-9]+$")]
+""" Hexadecimal hash """
+
+type NE_str      = Annotated[ str, Field( pattern = r"^[^\s].+$")]
+""" Non-empty string (at least 2 chars and first char cannot be whitespace) """
+
+type NE_var_name = Annotated[ str, Field( pattern = r"^[A-Za-z\_]\w+$")]
+""" Non-empty variable name (at least 2 chars) """
+
+type NumericID   = Annotated[ str, Field( pattern = r"^[0-9]+$")]
+""" Numeric ID """
+
+type UnixTS      = Annotated[ str, Field( pattern = r"^[1-9][0-9]*$")]
+""" Unix timestamp """
+
+
+def validate_mime_type( value : str) -> str :
+    """
+    Validate MIME type
+    Args:
+        value : MIME type
+    Returns:
+        Cleaned MIME type string (stripped, lowercase, parameters removed)
+    Raises:
+        ValueError : If MIME type is invalid
+    """
+    if (
+        isinstance( value, str) and
+        (
+            cleaned_value := value.strip().lower().split( ";", maxsplit = 1)[0].strip()
+        ) and
+        guess_extension(cleaned_value)
+    ) :
+        return cleaned_value
+    
+    raise ValueError(f"MIME type '{value}' is invalid")
+
+type MIME_Type = Annotated[ str, AfterValidator(validate_mime_type)]
+""" MIME Type """
 
 
 def print_validation_errors( ve : ValidationError, indent : int = 4) -> None :
