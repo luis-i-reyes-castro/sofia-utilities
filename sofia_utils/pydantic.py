@@ -7,10 +7,15 @@ from __future__ import annotations
 from mimetypes import guess_extension
 from pydantic import (
     AfterValidator,
+    BaseModel,
     Field,
     ValidationError,
 )
-from typing import Annotated
+from typing import (
+    Annotated,
+    Any,
+    Callable,
+)
 
 from .printing import print_ind
 
@@ -42,10 +47,10 @@ def validate_mime_type( value : str) -> str :
         ValueError : If MIME type is invalid
     """
     if (
-        isinstance( value, str) and
-        (
-            cleaned_value := value.strip().lower().split( ";", maxsplit = 1)[0].strip()
-        ) and
+        isinstance( value, str)
+        and
+        ( cleaned_value := value.strip().lower().split( ";", maxsplit = 1)[0].strip() )
+        and
         guess_extension(cleaned_value)
     ) :
         return cleaned_value
@@ -78,3 +83,13 @@ def print_validation_errors( ve : ValidationError, indent : int = 4) -> None :
         print_ind( f"Message  : {message}",  indent)
     
     return
+
+
+def serialize_without_nones(
+    basemodel : BaseModel,
+    handler   : Callable[ [BaseModel], dict[ str, Any]],
+) -> dict[ str, Any] :
+    
+    return {
+        key : val for (key,val) in handler(basemodel).items() if val is not None
+    }
